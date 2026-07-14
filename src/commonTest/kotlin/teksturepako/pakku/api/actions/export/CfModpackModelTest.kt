@@ -1,6 +1,9 @@
 package teksturepako.pakku.api.actions.export
 
+import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.get
+import io.mockk.coEvery
+import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import strikt.api.expectThat
@@ -26,6 +29,10 @@ import kotlin.test.assertNotNull
 
 class CfModpackModelTest : PakkuTest()
 {
+    private val exportDeps = mockk<ExportDeps> {
+        coEvery { resolveContent(any()) } returns Ok(byteArrayOf(0x50, 0x4B, 0x03, 0x04))
+    }
+
     private val modpackName = "CurseForgeProfileTestModpack"
 
     private val greeneryCfId = 574029
@@ -72,7 +79,8 @@ class CfModpackModelTest : PakkuTest()
             profiles = listOf(curseForgeProfile()),
             onError = { _, _ -> },
             onSuccess = { _, _, _ -> },
-            lockFile, configFile, platforms
+            lockFile, configFile, platforms,
+            deps = exportDeps,
         )
     }
 

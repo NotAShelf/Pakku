@@ -13,7 +13,6 @@ import teksturepako.pakku.api.data.Dirs.cacheDir
 import teksturepako.pakku.api.data.LockFile
 import teksturepako.pakku.api.data.json
 import teksturepako.pakku.api.data.workingPath
-import teksturepako.pakku.api.http.requestByteArray
 import teksturepako.pakku.api.overrides.ManualOverride
 import teksturepako.pakku.api.overrides.OverrideType
 import teksturepako.pakku.api.platforms.Provider
@@ -30,7 +29,8 @@ sealed class RuleContext(
     open val workingSubDir: String,
     open val lockFile: LockFile,
     open val configFile: ConfigFile,
-    open val noServer: Boolean = false
+    open val noServer: Boolean = false,
+    protected open val deps: ExportDeps = defaultExportDeps(),
 )
 {
     fun getPath(path: String, vararg subpath: String) =
@@ -119,11 +119,12 @@ sealed class RuleContext(
         override val lockFile: LockFile,
         override val configFile: ConfigFile,
         override val workingSubDir: String,
-        override val noServer: Boolean = false
-    ) : RuleContext(workingSubDir, lockFile, configFile, noServer)
+        override val noServer: Boolean = false,
+        override val deps: ExportDeps = defaultExportDeps(),
+    ) : RuleContext(workingSubDir, lockFile, configFile, noServer, deps)
     {
         /** Sets the [project entry][RuleContext.ExportingProject] missing. */
-        fun setMissing(): RuleResult = MissingProject(project, lockFile, configFile, workingSubDir, noServer)
+        fun setMissing(): RuleResult = MissingProject(project, lockFile, configFile, workingSubDir, noServer, deps)
             .ruleResult("missing ${project.slug}", Packaging.EmptyAction)
         
         suspend fun exportAsOverride(
@@ -140,8 +141,7 @@ sealed class RuleContext(
             val projectFile = project.getLatestFile(Provider.providers) ?: return error(NoFiles(project, lockFile))
 
             val result = onExport(
-                // Creates a callback to download the file lazily.
-                { projectFile.url?.let { url -> requestByteArray(url) } },
+                { deps.resolveContent(projectFile) },
                 projectFile.fileName,
                 OverrideType.fromProject(project).folderName
             )
@@ -157,8 +157,9 @@ sealed class RuleContext(
         override val lockFile: LockFile,
         override val configFile: ConfigFile,
         override val workingSubDir: String,
-        override val noServer: Boolean = false
-    ) : RuleContext(workingSubDir, lockFile, configFile, noServer)
+        override val noServer: Boolean = false,
+        override val deps: ExportDeps = defaultExportDeps(),
+    ) : RuleContext(workingSubDir, lockFile, configFile, noServer, deps)
     {
         fun export(
             overridesDir: String? = type.folderName,
@@ -187,8 +188,9 @@ sealed class RuleContext(
         override val lockFile: LockFile,
         override val configFile: ConfigFile,
         override val workingSubDir: String,
-        override val noServer: Boolean = false
-    ) : RuleContext(workingSubDir, lockFile, configFile, noServer)
+        override val noServer: Boolean = false,
+        override val deps: ExportDeps = defaultExportDeps(),
+    ) : RuleContext(workingSubDir, lockFile, configFile, noServer, deps)
     {
         fun export(
             overridesDir: String? = manualOverride.type.folderName,
@@ -223,8 +225,9 @@ sealed class RuleContext(
         override val lockFile: LockFile,
         override val configFile: ConfigFile,
         override val workingSubDir: String,
-        override val noServer: Boolean = false
-    ) : RuleContext(workingSubDir, lockFile, configFile, noServer)
+        override val noServer: Boolean = false,
+        override val deps: ExportDeps = defaultExportDeps(),
+    ) : RuleContext(workingSubDir, lockFile, configFile, noServer, deps)
     {
         suspend fun exportAsOverrideFrom(
             provider: Provider,
@@ -241,8 +244,7 @@ sealed class RuleContext(
                 ?: return error(NoFilesOn(project, provider))
 
             val result = onExport(
-                // Creates a callback to download the file lazily.
-                { projectFile.url?.let { url -> requestByteArray(url) } },
+                { deps.resolveContent(projectFile) },
                 projectFile.fileName,
                 OverrideType.fromProject(project).folderName
             )
@@ -269,12 +271,7 @@ sealed class RuleContext(
                 ?: return error(NoFiles(project, lockFile))
 
             val result = onExport(
-                // Creates a callback to download the file lazily.
-                {
-                    projectFile.url?.let { url ->
-                        requestByteArray(url)
-                    }
-                },
+                { deps.resolveContent(projectFile) },
                 projectFile.fileName,
                 OverrideType.fromProject(project).folderName
             )
@@ -288,8 +285,9 @@ sealed class RuleContext(
         override val lockFile: LockFile,
         override val configFile: ConfigFile,
         override val workingSubDir: String,
-        override val noServer: Boolean = false
-    ) : RuleContext(workingSubDir, lockFile, configFile, noServer)
+        override val noServer: Boolean = false,
+        override val deps: ExportDeps = defaultExportDeps(),
+    ) : RuleContext(workingSubDir, lockFile, configFile, noServer, deps)
     {
         fun replaceText(vararg pairs: Pair<String, String>): RuleResult
         {
