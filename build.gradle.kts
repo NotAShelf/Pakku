@@ -275,6 +275,7 @@ publishing {
 application {
     mainClass.set("teksturepako.pakku.MainKt")
     applicationName = "Pakku"
+    applicationDefaultJvmArgs = listOf("--enable-native-access=ALL-UNNAMED")
 }
 
 distributions {
