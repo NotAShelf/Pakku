@@ -1,67 +1,82 @@
 package teksturepako.pakku.api.actions.update
 
-import com.github.ajalt.clikt.testing.test
-import com.github.michaelbull.result.get
-import com.github.michaelbull.result.getOrElse
-import com.github.michaelbull.result.onFailure
-import kotlinx.coroutines.test.runTest
+import io.mockk.every
+import io.mockk.mockk
+import kotlinx.datetime.Instant
 import strikt.api.expectThat
-import strikt.assertions.contains
 import strikt.assertions.isEqualTo
 import teksturepako.pakku.PakkuTest
-import teksturepako.pakku.api.data.LockFile
 import teksturepako.pakku.api.platforms.Modrinth
-import teksturepako.pakku.cli.cmd.Add
-import teksturepako.pakku.cli.cmd.Update
+import teksturepako.pakku.api.projects.Project
+import teksturepako.pakku.api.projects.ProjectFile
+import teksturepako.pakku.api.projects.ProjectType
 import kotlin.test.Test
-import kotlin.test.assertNotNull
-import kotlin.test.fail
 
 class UpdateTest : PakkuTest(debug = false)
 {
+    private fun fabricApiProject(vararg files: ProjectFile) = Project(
+        type = ProjectType.MOD,
+        slug = mutableMapOf(Modrinth.serialName to "fabric-api"),
+        name = mutableMapOf(Modrinth.serialName to "Fabric API"),
+        id = mutableMapOf(Modrinth.serialName to "P7dR5mHq"),
+        files = files.toMutableSet(),
+    )
+
+    private fun mockMrFile(mcVersion: String, published: Instant, fileId: String) =
+        mockk<ProjectFile> {
+            every { type } returns Modrinth.serialName
+            every { fileName } returns "fabric-api-$mcVersion.jar"
+            every { mcVersions } returns mutableListOf(mcVersion)
+            every { loaders } returns mutableListOf("fabric")
+            every { datePublished } returns published
+            every { id } returns fileId
+        }
+
     @Test
-    fun `prefer mc version higher in lock file`() = runTest {
-        LockFile(
-            target = Modrinth.serialName,
-            mcVersions = mutableListOf("1.21.1"),
-            loaders = mutableMapOf("fabric" to "")
-        ).apply { write()?.onError { fail(it.message()) } }
+    fun `prefer mc version higher in lock file`()
+    {
+        val older = Instant.parse("2024-06-01T00:00:00Z")
+        val newer = Instant.parse("2024-12-01T00:00:00Z")
 
-        Add().test("fabric-api").also { println(it.output) }
+        val file1211 = mockMrFile("1.21.1", newer, "file-1211")
+        val file1214 = mockMrFile("1.21.4", older, "file-1214")
 
-        val fabricApi = LockFile.readToResult().getOrElse { fail(it.message()) }
-            .getProject("fabric-api")
+        val accProject = fabricApiProject(file1211)
+        val newProject = fabricApiProject(file1211, file1214)
 
-        assertNotNull(fabricApi)
-        assertNotNull(fabricApi.getLatestFile(listOf(Modrinth))?.mcVersions)
+        val updated = combineProjects(
+            accProject = accProject,
+            newProject = newProject,
+            platformName = Modrinth.serialName,
+            numberOfFiles = 1,
+            mcVersions = listOf("1.21.4", "1.21.1"),
+        )
 
-        println("fabric-api mc versions: " + fabricApi.getLatestFile(listOf(Modrinth))?.mcVersions)
-
-        expectThat(fabricApi.getLatestFile(listOf(Modrinth))!!.mcVersions)
-            .contains("1.21.1")
-
-        val updatedLockFile = LockFile.readToResult()
-            .onFailure { fail(it.message()) }
-            .get()
-            ?.apply { setMcVersions(listOf("1.21.4", "1.21.1")) }
-            ?.apply { write()?.onError { fail(it.message()) } }
-
-        assertNotNull(updatedLockFile)
-
-        println("updated mc versions: " + updatedLockFile.getMcVersions())
-
-        Update().test("--all").also { println(it.output) }
-
-        val updatedFabricApi = LockFile.readToResult().getOrElse { fail(it.message()) }
-            .getProject("fabric-api")
-
-        assertNotNull(updatedFabricApi)
-        assertNotNull(updatedFabricApi.getLatestFile(listOf(Modrinth))?.mcVersions)
-
-        println("updated fabric-api mc versions: " + updatedFabricApi.getLatestFile(listOf(Modrinth))?.mcVersions)
-
-        expectThat(updatedFabricApi.getLatestFile(listOf(Modrinth))!!.mcVersions)
+        expectThat(updated.getLatestFile(listOf(Modrinth))!!.mcVersions)
             .isEqualTo(mutableListOf("1.21.4"))
     }
 
+    @Test
+    fun `prefer mc version listed first in lock file`()
+    {
+        val older = Instant.parse("2024-06-01T00:00:00Z")
+        val newer = Instant.parse("2024-12-01T00:00:00Z")
+
+        val file1211 = mockMrFile("1.21.1", older, "file-1211")
+        val file1214 = mockMrFile("1.21.4", newer, "file-1214")
+
+        val accProject = fabricApiProject(file1211)
+        val newProject = fabricApiProject(file1211, file1214)
+
+        val updated = combineProjects(
+            accProject = accProject,
+            newProject = newProject,
+            platformName = Modrinth.serialName,
+            numberOfFiles = 1,
+            mcVersions = listOf("1.21.1"),
+        )
+
+        expectThat(updated.getLatestFile(listOf(Modrinth))!!.mcVersions)
+            .isEqualTo(mutableListOf("1.21.1"))
+    }
 }

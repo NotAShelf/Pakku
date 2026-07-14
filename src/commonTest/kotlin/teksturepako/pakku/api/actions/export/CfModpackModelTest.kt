@@ -2,6 +2,7 @@ package teksturepako.pakku.api.actions.export
 
 import com.github.michaelbull.result.get
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import strikt.api.expectThat
 import strikt.assertions.contains
 import strikt.assertions.isEqualTo
@@ -76,13 +77,10 @@ class CfModpackModelTest : PakkuTest()
     }
 
     @Test
-    fun `test cf modpack model in cache`()
-    {
+    fun `test cf modpack model in cache`() = runTest {
         val manifestPath = Path(Dirs.cacheDir.pathString, CurseForge.serialName, CfModpackModel.MANIFEST)
 
-        val modpackModel = runBlocking {
-            readPathTextOrNull(manifestPath).toCfModpackModel()
-        }
+        val modpackModel = readPathTextOrNull(manifestPath).toCfModpackModel()
 
         assertNotNull(modpackModel)
 

@@ -27,6 +27,7 @@ import kotlin.io.path.pathString
 import kotlin.test.Test
 import kotlin.test.assertNotNull
 
+// TODO: Clean up this test
 /**
  * Tests for CurseForge and Modrinth export rules with server-side mod filtering.
  * Tests the implementation of the `export_server_side_projects_to_client` configuration option.
@@ -225,7 +226,7 @@ class ExportRulesTest : PakkuTest()
     }
 
     @Test fun `CurseForge export includes SERVER mods when config is true`() = runTest {
-        runBlocking {
+
         val lockFile = LockFile(
             target = CurseForge.serialName,
             mcVersions = mutableListOf(mcVersion),
@@ -261,7 +262,6 @@ class ExportRulesTest : PakkuTest()
         // CLIENT mod should be in files
         expectThat(modpackModel.files)
             .any { get { projectID }.isEqualTo(clientModCfId) }
-        }
     }
 
     @Test fun `CurseForge export includes CLIENT mods regardless of config`() = runTest {
