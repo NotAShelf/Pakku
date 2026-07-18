@@ -25,7 +25,7 @@ data class ManualOverride(
         {
             val separator = File.separator
 
-            if (path.notExists() && !path.isRegularFile()) return null
+            if (path.notExists() || !path.isRegularFile()) return null
 
             val type: OverrideType = OverrideType.entries.firstOrNull { overrideType ->
                 "$separator${overrideType.folderName}$separator" in path.absolutePathString()
