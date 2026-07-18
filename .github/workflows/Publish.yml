@@ -8,9 +8,11 @@ on:
     branches:
       - main
     paths:
-      - 'src/**'
+      - 'pakku-core/**'
+      - 'pakku-cli/**'
       - 'build.gradle.kts'
       - 'settings.gradle.kts'
+      - 'gradle/**'
       - 'gradle.properties'
       - '.github/workflows/Publish.yml'
 
@@ -38,7 +40,7 @@ jobs:
           cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
 
       - name: Publish to GitHub Packages
-        run: ./gradlew publish -PsnapshotVersion
+        run: ./gradlew :pakku-core:publish -PsnapshotVersion
         env:
           GITHUB_USERNAME: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -66,7 +68,7 @@ jobs:
           cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
 
       - name: Publish to GitHub Packages
-        run: ./gradlew publish
+        run: ./gradlew :pakku-core:publish
         env:
           GITHUB_USERNAME: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

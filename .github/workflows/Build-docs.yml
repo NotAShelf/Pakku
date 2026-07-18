@@ -62,14 +62,14 @@ jobs:
             cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
 
       - name: 📦 Build API docs using Dokka
-        run: ./gradlew dokkaHtml
+        run: ./gradlew :pakku-core:dokkaHtml
 
       - name: Upload API docs
         uses: actions/upload-artifact@v4
         with:
           name: api-docs
           path: |
-            build/dokka/html
+            pakku-core/build/dokka/html
           retention-days: 7
 
   build-dist-forms:

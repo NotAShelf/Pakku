@@ -1,5 +1,65 @@
 [versions]
 kotlin = "2.0.21"
 ktor = "3.1.0"
-kotest = "5.0.2"
 dokka = "1.9.20"
+coroutines = "1.9.0"
+serialization = "1.7.3"
+atomicfu = "0.26.0"
+datetime = "0.6.1"
+urlencoder = "1.6.0"
+kotlin-result = "2.0.0"
+clikt = "5.0.1"
+mordant = "3.0.1"
+slf4j = "2.0.7"
+jgit = "5.13.4.202507202350-r"
+jna = "5.13.0"
+flexver = "1.1.1"
+mockk = "1.13.12"
+strikt = "0.34.0"
+
+[libraries]
+kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test" }
+
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
+kotlinx-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "atomicfu" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "datetime" }
+
+urlencoder = { module = "net.thauvin.erik.urlencoder:urlencoder-lib", version.ref = "urlencoder" }
+kotlin-result = { module = "com.michael-bull.kotlin-result:kotlin-result", version.ref = "kotlin-result" }
+
+clikt = { module = "com.github.ajalt.clikt:clikt", version.ref = "clikt" }
+clikt-markdown = { module = "com.github.ajalt.clikt:clikt-markdown", version.ref = "clikt" }
+mordant-coroutines = { module = "com.github.ajalt.mordant:mordant-coroutines", version.ref = "mordant" }
+mordant-jvm-jna = { module = "com.github.ajalt.mordant:mordant-jvm-jna", version.ref = "mordant" }
+
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
+
+jgit = { module = "org.eclipse.jgit:org.eclipse.jgit", version.ref = "jgit" }
+jna = { module = "net.java.dev.jna:jna", version.ref = "jna" }
+jna-platform = { module = "net.java.dev.jna:jna-platform", version.ref = "jna" }
+
+flexver = { module = "com.unascribed:flexver-java", version.ref = "flexver" }
+
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+strikt = { module = "io.strikt:strikt-core", version.ref = "strikt" }
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+kotlin-power-assert = { id = "org.jetbrains.kotlin.plugin.power-assert", version.ref = "kotlin" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+
+[bundles]
+ktor-client = ["ktor-client-core", "ktor-client-content-negotiation", "ktor-client-okhttp"]
+clikt = ["clikt", "clikt-markdown"]
+mordant = ["mordant-coroutines", "mordant-jvm-jna"]
+slf4j = ["slf4j-api", "slf4j-simple"]
+jna = ["jna", "jna-platform"]
