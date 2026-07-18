@@ -35,7 +35,7 @@ data class CliConfig(
     companion object
     {
         const val FILE_NAME = "cli-config.json"
-        val filePath = Path(workingPath, PAKKU_DIR, FILE_NAME)
+        val filePath get() = Path(workingPath, PAKKU_DIR, FILE_NAME)
 
         suspend fun readToResult(): Result<CliConfig, ActionError> = decodeToResult<CliConfig>(filePath)
     }

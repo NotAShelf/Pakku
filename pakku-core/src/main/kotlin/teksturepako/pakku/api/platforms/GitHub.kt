@@ -26,7 +26,7 @@ object GitHub : Provider
 
     // -- ACCESS TOKEN --
 
-    private val accessTokenHeader = PakkuApi.gitHubAccessToken
+    private val accessTokenHeader get() = PakkuApi.gitHubAccessToken
         ?.takeIf { it.isNotBlank() }
         ?.let { "Authorization" to "token $it" }
 

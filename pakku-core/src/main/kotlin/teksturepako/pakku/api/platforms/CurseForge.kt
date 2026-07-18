@@ -50,7 +50,7 @@ object CurseForge : Platform(
 
     private const val API_KEY_HEADER = "x-api-key"
 
-    private val apiKeyHeader = PakkuApi.curseForgeApiKey?.takeIf { it.isNotBlank() }?.let { API_KEY_HEADER to it }
+    private val apiKeyHeader get() = PakkuApi.curseForgeApiKey?.takeIf { it.isNotBlank() }?.let { API_KEY_HEADER to it }
 
     override suspend fun requestProjectBody(input: String): Result<String, ActionError> =
         requestBody("${this.getCommonRequestUrl()}/$input", apiKeyHeader)
