@@ -283,8 +283,9 @@ data class LockFile(
         fun existsAt(path: Path): Boolean = path.exists()
 
         /** Reads [LockFile] and parses it, or returns a new [LockFile]. */
-        fun readOrNew(): LockFile = decodeOrNew<LockFile>(LockFile(), "$workingPath/$FILE_NAME")
-            .also { it.inheritConfig(ConfigFile.readOrNull()) }
+        fun readOrNew(): Result<LockFile, ActionError> =
+            decodeOrNew<LockFile>(LockFile(), "$workingPath/$FILE_NAME")
+                .onSuccess { it.inheritConfig(ConfigFile.readOrNull()) }
 
         /** Reads [LockFile] and parses it to a [Result]. */
         suspend fun readToResult(): Result<LockFile, ActionError> =

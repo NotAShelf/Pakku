@@ -1,6 +1,7 @@
 package teksturepako.pakku.cli.cmd
 
 import com.github.ajalt.clikt.testing.test
+import com.github.michaelbull.result.get
 import kotlinx.coroutines.runBlocking
 import strikt.api.expectThat
 import strikt.assertions.contains
@@ -35,7 +36,7 @@ class CfgPrjTest : PakkuTest()
     fun `should success with lock file & project`()
     {
         runBlocking {
-            val lockFile = LockFile.readOrNew()
+            val lockFile = LockFile.readOrNew().get()!!
             lockFile.add(
                 Project(
                     type = ProjectType.MOD,

@@ -63,8 +63,18 @@ class Init : CliktCommand()
             return@runBlocking
         }
 
-        val configFile = ConfigFile.readOrNew()
-        val lockFile = LockFile.readOrNew()
+        val configFile = ConfigFile.readOrNew().getOrElse {
+            terminal.pError(it)
+            echo()
+            return@runBlocking
+        }
+
+        val lockFile = LockFile.readOrNew().getOrElse {
+            terminal.pError(it)
+            echo()
+            return@runBlocking
+        }
+
         // -- NAME --
 
         with(nameOpt ?: terminal.prompt("? Modpack name") ?: "")

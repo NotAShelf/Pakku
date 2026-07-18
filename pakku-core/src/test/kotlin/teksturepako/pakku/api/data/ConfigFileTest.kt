@@ -5,6 +5,7 @@ import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 import strikt.assertions.isFalse
 import strikt.assertions.isTrue
+import com.github.michaelbull.result.get
 import teksturepako.pakku.PakkuTest
 import kotlin.io.path.Path
 import kotlin.io.path.writeText
@@ -31,7 +32,7 @@ class ConfigFileTest : PakkuTest()
             // Create a lockfile with version 1 (simulating old project from JSON)
             // Note: Default is now v2, so we write v1 to JSON directly to simulate old project
             Path("$workingPath/${LockFile.FILE_NAME}").writeText("""{"lockfile_version":1}""")
-            val lockFile = LockFile.readOrNew()
+            val lockFile = LockFile.readOrNew().get()!!
             expectThat(lockFile.getLockFileVersion()).isEqualTo(1)
             
             // Trigger migration
@@ -94,7 +95,7 @@ class ConfigFileTest : PakkuTest()
             
             // Create a lockfile v1 (simulating old project from JSON)
             Path("$workingPath/${LockFile.FILE_NAME}").writeText("""{"lockfile_version":1}""")
-            val lockFile = LockFile.readOrNew()
+            val lockFile = LockFile.readOrNew().get()!!
             
             // First migration
             val (firstConfig, firstLockFile, firstMigrated) = 
@@ -118,7 +119,7 @@ class ConfigFileTest : PakkuTest()
     {
         runBlocking {
             // Simulate new project with lockfile v2
-            val configFile = ConfigFile.readOrNew()
+            val configFile = ConfigFile.readOrNew().get()!!
             configFile.setName("New Modpack")
             configFile.setVersion("0.0.1")
             configFile.write()
@@ -176,7 +177,7 @@ class ConfigFileTest : PakkuTest()
         runBlocking {
             // Simulate Init command behavior:
             // 1. Create config with exportServerSideProjectsToClient = false
-            val configFile = ConfigFile.readOrNew()
+            val configFile = ConfigFile.readOrNew().get()!!
             configFile.setName("New Modpack")
             configFile.setVersion("0.0.1")
             configFile.setExportServerSideProjectsToClient(false)

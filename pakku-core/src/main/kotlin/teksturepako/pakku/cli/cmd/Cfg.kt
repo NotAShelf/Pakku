@@ -3,6 +3,7 @@ package teksturepako.pakku.cli.cmd
 import com.github.ajalt.clikt.core.*
 import com.github.ajalt.clikt.parameters.options.help
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.michaelbull.result.getOrElse
 import kotlinx.coroutines.runBlocking
 import teksturepako.pakku.api.data.ConfigFile
 import teksturepako.pakku.api.projects.ProjectType
@@ -55,7 +56,11 @@ class Cfg : CliktCommand()
 
     override fun run(): Unit = runBlocking {
 
-        val configFile = ConfigFile.readOrNew()
+        val configFile = ConfigFile.readOrNew().getOrElse {
+            terminal.pError(it)
+            echo()
+            return@runBlocking
+        }
 
         // -- MODPACK --
 

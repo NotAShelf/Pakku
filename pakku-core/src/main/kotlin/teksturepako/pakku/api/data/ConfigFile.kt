@@ -238,7 +238,8 @@ data class ConfigFile(
         fun exists(): Boolean = Path(workingPath, FILE_NAME).exists()
         fun existsAt(path: Path): Boolean = path.exists()
 
-        fun readOrNew(): ConfigFile = decodeOrNew(ConfigFile(), "$workingPath/$FILE_NAME")
+        fun readOrNew(): Result<ConfigFile, ActionError> =
+            decodeOrNew(ConfigFile(), "$workingPath/$FILE_NAME")
 
         fun readOrNull() = decodeToResult<ConfigFile>("$workingPath/$FILE_NAME").getOrNull()
 

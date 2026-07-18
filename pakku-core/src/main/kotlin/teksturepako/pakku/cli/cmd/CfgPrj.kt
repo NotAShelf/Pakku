@@ -68,7 +68,11 @@ class CfgPrj : CliktCommand("prj")
             return@runBlocking
         }
 
-        val configFile = ConfigFile.readOrNew()
+        val configFile = ConfigFile.readOrNew().getOrElse {
+            terminal.pError(it)
+            echo()
+            return@runBlocking
+        }
 
         projectArgs.mapNotNull { projectArg ->
             configFile.setProjectConfig(projectArg, lockFile) {

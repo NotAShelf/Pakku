@@ -10,6 +10,7 @@ import com.github.ajalt.clikt.parameters.options.varargValues
 import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.mordant.terminal.danger
 import com.github.ajalt.mordant.terminal.success
+import com.github.michaelbull.result.getOrElse
 import kotlinx.coroutines.runBlocking
 import teksturepako.pakku.api.data.LockFile
 import teksturepako.pakku.api.platforms.Platform
@@ -40,7 +41,11 @@ class Set : CliktCommand()
     ).associate()
 
     override fun run() = runBlocking {
-        val lockFile = LockFile.readOrNew()
+        val lockFile = LockFile.readOrNew().getOrElse {
+            terminal.pError(it)
+            echo()
+            return@runBlocking
+        }
 
         // -- PACK --
 
