@@ -5,7 +5,7 @@ import kotlin.io.path.Path
 object Dirs
 {
     const val PAKKU_DIR = ".pakku"
-    val cacheDir = Path(workingPath, "build", ".cache")
-    val shelfDir = Path(workingPath, PAKKU_DIR, "shelf")
-    val remoteDir = Path(workingPath, PAKKU_DIR, "remote")
+    val cacheDir get() = Path(workingPath, "build", ".cache")
+    val shelfDir get() = Path(workingPath, PAKKU_DIR, "shelf")
+    val remoteDir get() = Path(workingPath, PAKKU_DIR, "remote")
 }
