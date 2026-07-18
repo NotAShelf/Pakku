@@ -197,6 +197,7 @@ suspend fun List<RuleResult>.runEffects(
                             packagingAction.action()?.let {
                                 onError(it)
                             }
+                            null
                         }
                     }
 
@@ -204,7 +205,8 @@ suspend fun List<RuleResult>.runEffects(
                         debug { println("$ruleResult in ${action.duration}") }
                     }
 
-                    null
+                    // Must be awaited before Finished (e.g. modrinth.index.json serialization)
+                    action.value
                 }
                 else null
             }

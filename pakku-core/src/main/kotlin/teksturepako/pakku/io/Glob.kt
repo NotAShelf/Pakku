@@ -44,17 +44,18 @@ suspend fun Path.walk(
                 }
                 ?.let { it to relativePath }
         }
-        .flatMap { (glob, path) ->
-            if (path.isDirectory())
+        .flatMap { (glob, relativePath) ->
+            // relativePath must be resolved against the walk root — isDirectory()/isRegularFile()
+            // on a bare relative Path resolve against the process CWD, not the modpack root.
+            if (this@walk.resolve(relativePath).isDirectory())
             {
                 walk
                     .filter { recursivePath ->
                         val relativeRecursivePath = recursivePath.relativeTo(this@walk)
-                        val relativeDirPath = path.relativeTo(this@walk)
 
-                        relativeRecursivePath.startsWith(relativeDirPath)
-                                && relativeRecursivePath != relativeDirPath
-                                && relativeRecursivePath.isRegularFile()
+                        relativeRecursivePath.startsWith(relativePath)
+                                && relativeRecursivePath != relativePath
+                                && recursivePath.isRegularFile()
                     }
                     .map { recursivePath ->
                         recursivePath.relativeTo(this@walk) to glob.isNegated
@@ -62,7 +63,7 @@ suspend fun Path.walk(
             }
             else
             {
-                sequenceOf(path to glob.isNegated)
+                sequenceOf(relativePath to glob.isNegated)
             }
         }
 }
@@ -76,7 +77,7 @@ suspend fun List<String>.expandWithGlob(inputPath: Path): List<String>
         {
             isNegated ->
             {
-                if (path.isDirectory())
+                if (inputPath.resolve(path).isDirectory())
                 {
                     acc.removeAll { existingPath ->
                         Path(existingPath).startsWith(path)

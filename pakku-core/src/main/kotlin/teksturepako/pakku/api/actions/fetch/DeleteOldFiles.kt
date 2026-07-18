@@ -52,7 +52,7 @@ suspend fun deleteOldFiles(
                 async x@ {
                     val parentProject = projectFile.getParentProject(lockFile) ?: return@x null
 
-                    val path = projectFile.getPath(parentProject, configFile)
+                    val path = projectFile.getPath(parentProject, configFile) ?: return@x null
 
                     readPathBytesToResult(path).get()?.let { path to it }
                 }
@@ -69,7 +69,7 @@ suspend fun deleteOldFiles(
             async x@ {
                 val parentProject = projectFile.getParentProject(lockFile) ?: return@x null
 
-                val path = projectFile.getPath(parentProject, configFile)
+                val path = projectFile.getPath(parentProject, configFile) ?: return@x null
 
                 readPathBytesToResult(path)
                     .get()?.let { path to it }

@@ -124,8 +124,8 @@ suspend fun ProjectFile.toMrFile(configFile: ConfigFile, parentProject: Project)
      */
     val url = UrlEncoderUtil.encode(this.url ?: return null, allow = "/:")
 
-    val relativePathString = this.getRelativePathString(parentProject, configFile)
-    val path = this.getPath(parentProject, configFile)
+    val relativePathString = this.getRelativePathString(parentProject, configFile) ?: return null
+    val path = this.getPath(parentProject, configFile) ?: return null
 
     val env = when (OverrideType.fromProject(parentProject))
     {

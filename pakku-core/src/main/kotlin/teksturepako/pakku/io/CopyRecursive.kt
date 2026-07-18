@@ -7,6 +7,7 @@ import com.github.michaelbull.result.getOrElse
 import com.github.michaelbull.result.runCatching
 import kotlinx.coroutines.coroutineScope
 import teksturepako.pakku.api.actions.errors.ActionError
+import teksturepako.pakku.api.data.workingPath
 import teksturepako.pakku.io.FileAction.*
 import java.nio.file.Path
 import kotlin.io.path.*
@@ -69,14 +70,16 @@ suspend fun Path.copyFileTo(
     destination: Path,
     onAction: suspend (FileAction) -> Unit = { }
 ): ActionError? = runCatching {
-    if (this.hasUnsafePathComponents())
+    // Absolute paths under workingPath are allowed (e.g. Pakku Desktop).
+    // hasUnsafePathComponents handles both absolute FS paths and relative entry names.
+    val baseDir = Path(workingPath)
+    if (!this.isWithinBounds(baseDir)
+        || !destination.isWithinBounds(baseDir)
+        || this.hasUnsafePathComponents()
+        || destination.hasUnsafePathComponents()
+    )
     {
         return@runCatching IllegalPath(this.toString())
-    }
-
-    if (destination.hasUnsafePathComponents())
-    {
-        return@runCatching IllegalPath(destination.toString())
     }
 
     val sourceHash = this.readAndCreateSha1FromBytes()
@@ -118,7 +121,7 @@ private suspend fun Path.copyDirectoryTo(
 private suspend fun Path.collectFileInfo(baseDir: Path): Result<List<FileInfo>, ActionError> = coroutineScope {
     return@coroutineScope try {
         val files = walk()
-            .filter { it.isRegularFile() }
+            .filter { !it.isSymbolicLink() && it.isRegularFile() }
             .toList()
             .mapAsync { path ->
                 val relativePath = this@collectFileInfo.relativize(path)

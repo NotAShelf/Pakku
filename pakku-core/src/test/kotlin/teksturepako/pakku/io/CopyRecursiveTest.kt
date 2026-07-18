@@ -38,6 +38,26 @@ class CopyRecursiveTest : PakkuTest()
     }
 
     @Test
+    fun `copy single file from absolute path`(): Unit = runBlocking {
+        val struct = testStructure {
+            file("source.txt", testFileContent)
+        }
+
+        with(struct) {
+            val absoluteSource = file("source.txt").toAbsolutePath()
+            val absoluteDest = testPath("dest.txt").toAbsolutePath()
+
+            absoluteSource.copyRecursivelyTo(absoluteDest)
+                ?.onError { fail("Absolute paths should be allowed for filesystem copy: $it") }
+        }
+
+        expectStructure {
+            file("source.txt", testFileContent)
+            file("dest.txt", testFileContent)
+        }
+    }
+
+    @Test
     fun `invalid file`(): Unit = runBlocking {
         val struct = testStructure {
             file("../source.txt", testFileContent)

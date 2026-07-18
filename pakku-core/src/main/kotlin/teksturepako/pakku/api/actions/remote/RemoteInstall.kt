@@ -30,7 +30,7 @@ suspend fun remoteInstall(
 
     return when
     {
-        remoteUrl.endsWith(".git") || remoteUrl.contains("github.com") ->
+        isAllowedRemoteGitUrl(remoteUrl) ->
         {
             handleGit(remoteUrl, branch, allowedTypes, onProgress, onSync)
         }
@@ -52,6 +52,24 @@ data class RemoteAlreadyExists(val url: String): ActionError()
 data class InvalidUrl(val url: String): ActionError()
 {
     override val rawMessage = "Invalid URL: '$url'"
+}
+
+/** Accepts https remotes ending in `.git`, or https://github.com/... hosts. */
+internal fun isAllowedRemoteGitUrl(remoteUrl: String): Boolean
+{
+    return try
+    {
+        val uri = java.net.URI(remoteUrl)
+        val scheme = uri.scheme?.lowercase() ?: return false
+        if (scheme != "https") return false
+
+        val host = uri.host?.lowercase() ?: return false
+        remoteUrl.endsWith(".git") || host == "github.com" || host.endsWith(".github.com")
+    }
+    catch (_: Exception)
+    {
+        false
+    }
 }
 
 private suspend fun handleGit(

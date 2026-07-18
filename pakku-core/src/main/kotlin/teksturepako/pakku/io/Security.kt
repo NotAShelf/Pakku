@@ -35,25 +35,51 @@ class IllegalPath(path: String) : ActionError()
     override val rawMessage = "Illegal path: '$path'."
 }
 
+/** Validates relative entry paths (overrides, zip names, subpaths). Absolute roots are illegal. */
 fun filterPath(path: String): Result<String, ActionError>
 {
-    return if (path.hasUnsafePathComponents()) Err(IllegalPath(path)) else Ok(path)
+    return if (path.hasUnsafeRelativePathComponents()) Err(IllegalPath(path)) else Ok(path)
 }
 
-fun Path.hasUnsafePathComponents(): Boolean =
-    this.pathString.hasUnsafePathComponents()
+/**
+ * True when [this] is a single path segment safe to use as a downloaded file name
+ * (no separators, traversal, or reserved device names).
+ */
+fun String.isSafeFileName(): Boolean
+{
+    if (isBlank() || this == "." || this == "..") return false
+    if ('/' in this || '\\' in this) return false
+    return !hasUnsafeRelativePathComponents()
+}
 
-private fun String.hasUnsafePathComponents(): Boolean
+/**
+ * Path safety for both absolute filesystem paths and relative entry names.
+ *
+ * - Relative: same rules as [filterPath] (no `/`, `\`, `..`, drive letters, device names).
+ * - Absolute: roots/`C:` are allowed; still rejects `..` segments and Windows device names.
+ */
+fun Path.hasUnsafePathComponents(): Boolean =
+    if (this.isAbsolute) this.hasUnsafeAbsolutePathComponents()
+    else this.pathString.hasUnsafeRelativePathComponents()
+
+private fun Path.hasUnsafeAbsolutePathComponents(): Boolean =
+    this.any { component ->
+        val name = component.pathString
+        name == ".." || name.isWindowsDeviceName()
+    }
+
+private fun String.hasUnsafeRelativePathComponents(): Boolean
 {
     return this.contains("..")
         || this.contains(Regex("[A-Z]:/"))
         || this.contains(Regex("[A-Z]:\\\\"))
         || this.startsWith("/")
         || this.startsWith("\\")
-        || this.split(File.separator).any { // windows devices
-            it.uppercase().matches(Regex("^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\\.|$)"))
-        }
+        || this.split(File.separator).any { it.isWindowsDeviceName() }
 }
+
+private fun String.isWindowsDeviceName(): Boolean =
+    this.uppercase().matches(Regex("^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\\.|$)"))
 
 fun Path.isWithinBounds(baseDir: Path): Boolean
 {
