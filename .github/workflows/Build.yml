@@ -54,7 +54,7 @@ jobs:
         with:
           cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
 
-      - run: ./gradlew jvmTest --stacktrace
+      - run: ./gradlew :pakku-core:test --stacktrace
 
       - name: Upload the build report
         if: failure()
@@ -82,7 +82,7 @@ jobs:
           cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
 
       - name: 📦 Build JVM Jar
-        run: ./gradlew jvmJar
+        run: ./gradlew :pakku-cli:jar
         env:
           CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
 
@@ -90,7 +90,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: jvm-jar
-          path: build/libs/pakku.jar
+          path: pakku-cli/build/libs/pakku.jar
 
   build-jvm-dist-zip:
     name: Build JVM ZIP Distribution
@@ -111,7 +111,7 @@ jobs:
           cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
 
       - name: 📦 Build JVM distZip
-        run: ./gradlew distZip
+        run: ./gradlew :pakku-cli:distZip
         env:
           CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
 
@@ -119,7 +119,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: jvm-dist-zip
-          path: build/distributions/*.zip
+          path: pakku-cli/build/distributions/*.zip
 
   build-jvm-dist-tar:
     name: Build JVM Tar Distribution
@@ -140,7 +140,7 @@ jobs:
           cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
 
       - name: 📦 Build JVM distTar
-        run: ./gradlew distTar
+        run: ./gradlew :pakku-cli:distTar
         env:
           CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
 
@@ -148,7 +148,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: jvm-dist-tar
-          path: build/distributions/
+          path: pakku-cli/build/distributions/
 
   release:
     name: Release

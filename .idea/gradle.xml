@@ -5,9 +5,12 @@
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="gradleJvm" value="21 (2)" />
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/pakku-cli" />
+            <option value="$PROJECT_DIR$/pakku-core" />
           </set>
         </option>
       </GradleProjectSettings>

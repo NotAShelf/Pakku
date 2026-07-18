@@ -3,9 +3,9 @@
 
 ## Quickstart
 
-To build the `pakku.jar` run the `jvmJar` Gradle task (`gradlew jvmJar`).
+To build the `pakku.jar` run the `:pakku-cli:jar` Gradle task (`gradlew :pakku-cli:jar`).
 
-To run tests, run the `jvmTest` Gradle task (`gradlew jvmTest`).
+To run tests, run the `:pakku-core:test` Gradle task (`gradlew :pakku-core:test`).
 
 ## Important Info
 
