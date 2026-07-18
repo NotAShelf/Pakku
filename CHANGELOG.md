@@ -3,6 +3,14 @@
 
 ## Unreleased
 
+## v1.5.0
+
+- Fixed flaky tests blocking nixpkgs update.
+- Added `--enable-native-access=ALL-UNNAMED` to `DEFAULT_JVM_OPTS`. (Disables the `A restricted method in java.lang.System has been called` warning)
+- Fatal export failure now returns exit code 1.
+- Updated JGit.
+- Fixed typo in code: `filedierector` -> `filedirector` in PR #128
+
 ## v1.4.0
 
 - Fixed bug which caused hash mismatches in `serverpack` exports of multiplatform modpacks.
