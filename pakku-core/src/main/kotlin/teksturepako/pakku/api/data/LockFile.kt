@@ -5,6 +5,7 @@ package teksturepako.pakku.api.data
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.get
 import com.github.michaelbull.result.onSuccess
 import kotlinx.serialization.Required
 import kotlinx.serialization.SerialName
@@ -293,7 +294,12 @@ data class LockFile(
         /** Reads [LockFile] from a specified [path] and parses it to a [Result]. */
         suspend fun readToResultFrom(path: Path): Result<LockFile, ActionError> =
             decodeToResult<LockFile>(path)
-                .onSuccess { it.inheritConfig(ConfigFile.readOrNull()) }
+                .onSuccess { lockFile ->
+                    val configFile = path.parent
+                        ?.resolve(ConfigFile.FILE_NAME)
+                        ?.let { ConfigFile.readToResultFrom(it).get() }
+                    lockFile.inheritConfig(configFile)
+                }
     }
 
     suspend fun write() = writeToFile(this, "$workingPath/$FILE_NAME", overrideText = true)
