@@ -26,27 +26,27 @@ kotlin {
 }
 
 dependencies {
-    implementation(libs.kotlin.stdlib)
+    api(libs.kotlin.stdlib)
 
-    implementation(libs.bundles.ktor.client)
+    api(libs.bundles.ktor.client)
 
-    implementation(libs.kotlinx.coroutines.core)
-    implementation(libs.kotlinx.serialization.json)
-    implementation(libs.kotlinx.atomicfu)
-    implementation(libs.kotlinx.datetime)
+    api(libs.kotlinx.coroutines.core)
+    api(libs.kotlinx.serialization.json)
+    api(libs.kotlinx.atomicfu)
+    api(libs.kotlinx.datetime)
 
-    implementation(libs.urlencoder)
-    implementation(libs.kotlin.result)
+    api(libs.urlencoder)
+    api(libs.kotlin.result)
 
-    implementation(libs.bundles.clikt)
-    implementation(libs.bundles.mordant)
+    api(libs.bundles.clikt)
+    api(libs.bundles.mordant)
 
-    implementation(libs.bundles.slf4j)
+    api(libs.bundles.slf4j)
 
-    implementation(libs.jgit)
-    implementation(libs.bundles.jna)
+    api(libs.jgit)
+    api(libs.bundles.jna)
 
-    implementation(libs.flexver)
+    api(libs.flexver)
 
     testImplementation(libs.kotlin.test)
     testImplementation(libs.kotlinx.coroutines.test)
