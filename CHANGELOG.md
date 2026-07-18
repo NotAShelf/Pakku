@@ -7,6 +7,7 @@
 
 - Fixed flaky tests blocking nixpkgs update.
 - Added `--enable-native-access=ALL-UNNAMED` to `DEFAULT_JVM_OPTS`. (Disables the `A restricted method in java.lang.System has been called` warning)
+- Manual overrides are now ignored in `pakku sync`; Fixes #104
 - Fatal export failure now returns exit code 1.
 - Updated JGit.
 - Fixed typo in code: `filedierector` -> `filedirector` in PR #128
