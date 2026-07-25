@@ -101,17 +101,20 @@ class GlobTest : PakkuTest(teardown = true)
         val subDir = "sub_dir"
         createTestDir(dir, subDir)
 
+        val includedFile = "included.txt"
+        createTestFile(dir, includedFile)
+        createTestFile(dir, subDir, "excluded.txt")
+
         val expandedGlob = listOf(
             dir,
             "!$dir/$subDir",
         ).expandWithGlob(Path(workingPath))
 
         expectThat(expandedGlob)
-            .contains(Path(dir).pathString)
+            .contains(Path(dir, includedFile).pathString)
 
         expectThat(expandedGlob)
-            .doesNotContain(Path(dir, subDir).pathString)
-
+            .doesNotContain(Path(dir, subDir, "excluded.txt").pathString)
     }
 
     @Test
@@ -136,7 +139,7 @@ class GlobTest : PakkuTest(teardown = true)
         ).expandWithGlob(Path(workingPath))
 
         expectThat(expandedGlob)
-            .contains(Path(dir).pathString)
+            .contains(Path(dir, file).pathString)
 
         expectThat(expandedGlob)
             .contains(Path(dir, subDir, file).pathString)
@@ -177,6 +180,7 @@ class GlobTest : PakkuTest(teardown = true)
             .doesNotContain(Path(firstDir, secondDir, file).pathString)
 
         // -- USING: '*' --
+        // Matches the subdirectory, which expands to its files (not the directory path itself).
 
         val expandedGlobsSingleWildcard = listOf(
             "$firstDir/*",
@@ -184,9 +188,10 @@ class GlobTest : PakkuTest(teardown = true)
         ).expandWithGlob(Path(workingPath))
 
         expectThat(expandedGlobsSingleWildcard)
-            .containsExactly(Path(firstDir, secondDir).pathString)
+            .containsExactly(Path(firstDir, secondDir, thirdDir, file2).pathString)
 
         // -- USING NO WILDCARDS --
+        // A bare directory pattern expands to all files under that directory.
 
         val expandedGlobWithoutWildcards = listOf(
             firstDir,
@@ -194,6 +199,6 @@ class GlobTest : PakkuTest(teardown = true)
         ).expandWithGlob(Path(workingPath))
 
         expectThat(expandedGlobWithoutWildcards)
-            .containsExactly(Path(firstDir).pathString)
+            .containsExactly(Path(firstDir, secondDir, thirdDir, file2).pathString)
     }
 }

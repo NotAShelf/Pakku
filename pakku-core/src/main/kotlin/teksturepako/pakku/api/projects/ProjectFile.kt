@@ -1,5 +1,9 @@
 package teksturepako.pakku.api.projects
 
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.getOrElse
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Required
 import kotlinx.serialization.SerialName
@@ -14,7 +18,10 @@ import teksturepako.pakku.api.platforms.CurseForge
 import teksturepako.pakku.api.platforms.GitHub
 import teksturepako.pakku.api.platforms.Modrinth
 import teksturepako.pakku.api.platforms.Provider
+import teksturepako.pakku.io.IllegalPath
 import teksturepako.pakku.io.createHash
+import teksturepako.pakku.io.filterPath
+import teksturepako.pakku.io.isSafeFileName
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.pathString
@@ -42,16 +49,24 @@ data class ProjectFile(
 
     // -- FILE PATH --
 
-    fun getPath(parentProject: Project, configFile: ConfigFile?, outputDir: Path = Path(workingPath)): Path
+    fun getSafeFileName(): Result<String, ActionError> =
+        if (fileName.isSafeFileName()) Ok(fileName) else Err(IllegalPath(fileName))
+
+    fun getPath(parentProject: Project, configFile: ConfigFile?, outputDir: Path = Path(workingPath)): Path?
     {
+        val safeFileName = getSafeFileName().getOrElse { return null }
         val parentPathString = parentProject.getPathStringWithSubpath(configFile)
-        return Path(outputDir.pathString, parentPathString, fileName)
+        // Parent dirs come from config/subpath and are already filterPath'd; still reject odd joins.
+        filterPath(parentPathString).getOrElse { return null }
+        return Path(outputDir.pathString, parentPathString, safeFileName)
     }
 
-    fun getRelativePathString(parentProject: Project, configFile: ConfigFile?, separator: Char = '/'): String
+    fun getRelativePathString(parentProject: Project, configFile: ConfigFile?, separator: Char = '/'): String?
     {
+        val safeFileName = getSafeFileName().getOrElse { return null }
         val parentPathString = parentProject.getPathStringWithSubpath(configFile, separator)
-        return "$parentPathString$separator$fileName"
+        filterPath(parentPathString.replace(separator, '/')).getOrElse { return null }
+        return "$parentPathString$separator$safeFileName"
     }
 
     // -- INTEGRITY --

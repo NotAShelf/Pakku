@@ -28,6 +28,12 @@ class ConnectionError(val exception: Exception) : ActionError()
     override val rawMessage = "HTTP connection error: ${exception.message}"
 }
 
+class InsecureUrl(val url: String) : ActionError()
+{
+    override val rawMessage =
+        "Refusing non-HTTPS URL without verifiable hashes: '$url'."
+}
+
 suspend inline fun <reified T> tryRequest(block: () -> HttpResponse): Result<T, ActionError>
 {
     return try
@@ -51,7 +57,10 @@ suspend inline fun <reified T> tryRequest(block: () -> HttpResponse): Result<T, 
 }
 
 /**
- * @return A body [ByteArray] of a https request or null if status code is not OK.
+ * @return A body [ByteArray] of an HTTP(S) request, or an error if the status code is not OK.
+ *
+ * Callers that cannot verify content hashes should reject non-HTTPS URLs before calling this
+ * (see [requireHttpsWhenUnverifiable]).
  */
 suspend fun requestByteArray(
     url: String,
@@ -60,6 +69,17 @@ suspend fun requestByteArray(
     pakkuClient.get(url) {
         onDownload { bytesSentTotal, contentLength -> onDownload(bytesSentTotal, contentLength) }
     }
+}
+
+/**
+ * When [hashes] are missing, non-HTTPS URLs are refused because integrity cannot be checked.
+ * When hashes are present, HTTP is allowed (content will be verified after download).
+ */
+fun requireHttpsWhenUnverifiable(url: String, hashes: Map<String, String>?): ActionError?
+{
+    if (!hashes.isNullOrEmpty()) return null
+    if (url.startsWith("https://", ignoreCase = true)) return null
+    return InsecureUrl(url)
 }
 
 /**

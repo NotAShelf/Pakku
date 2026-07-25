@@ -16,6 +16,7 @@ import java.util.zip.ZipOutputStream
 import kotlin.io.path.Path
 import kotlin.io.path.absolute
 import kotlin.io.path.invariantSeparatorsPathString
+import kotlin.io.path.isSymbolicLink
 
 fun readPathTextFromZip(zipPath: Path, filePath: Path): String? = runCatching {
     FileSystem.SYSTEM.openZip(zipPath.toOkioPath()).read(filePath.invariantSeparatorsPathString.toPath()) { readUtf8() }
@@ -31,7 +32,10 @@ suspend fun zip(inputDirectory: Path, outputZipFile: Path) = withContext(Dispatc
     ZipOutputStream(BufferedOutputStream(FileOutputStream(outputZipFile.toFile()))).use { zos ->
         for (file in inputFile.walkTopDown())
         {
-            val zipFileName = file.toPath().absolute().invariantSeparatorsPathString
+            val path = file.toPath()
+            if (path.isSymbolicLink()) continue
+
+            val zipFileName = path.absolute().invariantSeparatorsPathString
                 .removePrefix(inputFile.toPath().absolute().invariantSeparatorsPathString)
                 .removePrefix("/")
 

@@ -19,6 +19,8 @@ import teksturepako.pakku.api.platforms.Provider
 import teksturepako.pakku.api.projects.Project
 import teksturepako.pakku.io.copyFileTo
 import teksturepako.pakku.io.copyRecursivelyTo
+import teksturepako.pakku.io.IllegalPath
+import teksturepako.pakku.io.isWithinBounds
 import teksturepako.pakku.io.tryToResult
 import kotlin.io.path.*
 
@@ -50,8 +52,14 @@ sealed class RuleContext(
     ): RuleResult
     {
         val outputPath = getPath(path, *subpath)
+        val exportRoot = getPath()
 
         return ruleResult("createJsonFile '$outputPath'", Packaging.FileAction {
+            if (!outputPath.isWithinBounds(exportRoot))
+            {
+                return@FileAction outputPath to IllegalPath(outputPath.pathString)
+            }
+
             outputPath.tryToResult { createParentDirectories() }
                 .onFailure { error ->
                     if (error !is AlreadyExists) return@FileAction outputPath to error
@@ -69,6 +77,11 @@ sealed class RuleContext(
         val outputPath = getPath(path, *subpath)
 
         return ruleResult("createFile '$outputPath'", Packaging.FileAction {
+            if (!outputPath.isWithinBounds(getPath()))
+            {
+                return@FileAction outputPath to IllegalPath(outputPath.pathString)
+            }
+
             outputPath.tryToResult { createParentDirectories() }
                 .onFailure { error ->
                     if (error !is AlreadyExists) return@FileAction outputPath to error
@@ -96,6 +109,11 @@ sealed class RuleContext(
         val outputPath = getPath(path, *subpath)
 
         return ruleResult("createFile '$outputPath'", Packaging.FileAction {
+            if (!outputPath.isWithinBounds(getPath()))
+            {
+                return@FileAction outputPath to IllegalPath(outputPath.pathString)
+            }
+
             if (outputPath.exists()) return@FileAction outputPath to AlreadyExists(outputPath.pathString)
 
             val bytes = bytesCallback.invoke()?.get() ?: return@FileAction outputPath to DownloadFailed(outputPath)

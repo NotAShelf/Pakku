@@ -136,7 +136,7 @@ private tailrec fun Terminal.insp(project: Project?, arg: String, lockFile: Lock
             val provider = Provider.getProvider(projectFile.type)?.shortName
                 ?.createHyperlink(projectFile.getSiteUrl(lockFile))
                 ?: return@mapNotNull null
-            val path = projectFile.getRelativePathString(project, configFile)
+            val path = projectFile.getRelativePathString(project, configFile) ?: return@mapNotNull null
 
             val content = grid {
                 addPaddingWidthToFixedWidth = false

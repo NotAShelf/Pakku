@@ -11,9 +11,12 @@ import teksturepako.pakku.api.data.ConfigFile
 import teksturepako.pakku.api.data.LockFile
 import teksturepako.pakku.api.data.workingPath
 import teksturepako.pakku.api.http.requestByteArray
+import teksturepako.pakku.api.http.requireHttpsWhenUnverifiable
 import teksturepako.pakku.api.overrides.OverrideType
 import teksturepako.pakku.api.platforms.Provider
 import teksturepako.pakku.api.projects.ProjectFile
+import teksturepako.pakku.io.IllegalPath
+import teksturepako.pakku.io.isWithinBounds
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.createParentDirectories
@@ -54,6 +57,11 @@ suspend fun List<ProjectFile>.fetch(
                     val parentProject = projectFile.getParentProject(lockFile) ?: return@launch
 
                     val path = projectFile.getPath(parentProject, configFile, outputDir)
+                    if (path == null || !path.isWithinBounds(outputDir))
+                    {
+                        onError(IllegalPath(projectFile.fileName))
+                        return@launch
+                    }
 
                     if (path.exists())
                     {
@@ -61,16 +69,22 @@ suspend fun List<ProjectFile>.fetch(
                         return@launch
                     }
 
-                    if (projectFile.url == null)
+                    val url = projectFile.url
+                    if (url == null)
                     {
                         onError(NoUrl(projectFile))
+                        return@launch
+                    }
+
+                    requireHttpsWhenUnverifiable(url, projectFile.hashes)?.let { error ->
+                        onError(error)
                         return@launch
                     }
 
                     totalBytes += projectFile.size.toLong()
                     val prevBytes: AtomicLong = atomic(0L)
 
-                    val bytes = requestByteArray(projectFile.url!!) { bytesSentTotal, _ ->
+                    val bytes = requestByteArray(url) { bytesSentTotal, _ ->
                         completedBytes.getAndAdd(bytesSentTotal - prevBytes.value)
 
                         onProgress(completedBytes.value, totalBytes.value)
